@@ -1,0 +1,42 @@
+version: 2
+
+references:
+
+base_image: &base_image
+  hashicorp/terraform:light
+
+default_config: &default_config
+  docker:
+    - image: *base_image
+
+jobs:
+  staging_init:
+    <<: *default_config
+    working_directory: ~/environments/staging/common
+    steps:
+      - checkout
+
+      - run:
+          name: Terraform Init
+          command: |
+            terraform init -input=false
+
+  staging_plan:
+    <<: *default_config
+    working_directory: ~/environments/staging/common
+    steps:
+      - checkout
+
+      - run:
+          name: Terraform Plan
+          command: |
+            terraform plan -input=false
+
+workflows:
+  version: 2
+  init_plan_:
+    jobs:
+      - staging_init
+      - staging_plan:
+          requires:
+            - staging_init
