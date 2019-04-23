@@ -48,6 +48,7 @@ jobs:
     <<: *default_config
     steps:
       - checkout
+      - *restore_repo
       - *setup_credentials
       - run:
           name: Terraform Plan
