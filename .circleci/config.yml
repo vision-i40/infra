@@ -69,7 +69,7 @@ terraform_apply: &terraform_apply
     name: Terraform apply
     command: |
       cd environments/$ENVIRONMENT_MODULE
-      terraform apply -input=false
+      terraform apply -auto-approve
 
 jobs:
   staging_common_init:
