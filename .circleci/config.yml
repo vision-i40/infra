@@ -5,7 +5,7 @@ references:
 base_image: &base_image
   hashicorp/terraform:light
 
-default_common_config: &default_common_config
+default_config: &default_config
   docker:
     - image: *base_image
   working_directory: ~/infra
@@ -18,7 +18,7 @@ setup_credentials: &setup_credentials
 
 jobs:
   staging_common_init:
-    <<: *default_common_config
+    <<: *default_config
     steps:
       - checkout
       - *setup_credentials
@@ -29,7 +29,7 @@ jobs:
             terraform init -input=false
 
   staging_common_plan:
-    <<: *default_common_config
+    <<: *default_config
     steps:
       - checkout
       - *setup_credentials
