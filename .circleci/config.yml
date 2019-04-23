@@ -13,15 +13,37 @@ default_config: &default_config
     - image: *base_image
   working_directory: *working_directory
 
-restore_repo: &restore_repo
-  restore_cache:
-    key: v1-repo-{{ .Branch }}-{{ .Revision }}-{{ .Environment.ENVIRONMENT_MODULE }}
+common_cache_key: &common_cache_key
+  staging-common-tfstate-{{ .Branch }}-{{ .Revision }}
 
-save_repo: &save_repo
+common_state_folder: &common_state_folder
+  environments/staging/common
+
+services_cache_key: &services_cache_key
+  staging-services-tfstate-{{ .Branch }}-{{ .Revision }}
+
+services_state_folder: &services_state_folder
+  environments/staging/services
+
+restore_common_state: &restore_common_state
+  restore_cache:
+    key: *common_cache_key
+
+save_common_state: &save_common_state
   save_cache:
-    key: v1-repo-{{ .Branch }}-{{ .Revision }}-{{ .Environment.ENVIRONMENT_MODULE }}
+    key: *common_cache_key
     paths:
-      - environments/{{ .Environment.ENVIRONMENT_MODULE }}/.terraform
+      - *common_state_folder
+
+restore_services_state: &restore_services_state
+  restore_cache:
+    key: *services_cache_key
+
+save_services_state: &save_services_state
+  save_cache:
+    key: *services_cache_key
+    paths:
+      - *services_state_folder
 
 setup_credentials: &setup_credentials
   run:
@@ -58,7 +80,7 @@ jobs:
       - checkout
       - *setup_credentials
       - *terraform_init
-      - *save_repo
+      - *save_common_state
 
   staging_common_plan:
     <<: *default_config
@@ -66,10 +88,10 @@ jobs:
       ENVIRONMENT_MODULE: "staging/common"
     steps:
       - checkout
-      - *restore_repo
+      - *restore_common_state
       - *setup_credentials
       - *terraform_plan
-      - *save_repo
+      - *save_common_state
 
   staging_common_apply:
     <<: *default_config
@@ -77,10 +99,10 @@ jobs:
       ENVIRONMENT_MODULE: "staging/common"
     steps:
       - checkout
-      - *restore_repo
+      - *restore_common_state
       - *setup_credentials
       - *terraform_apply
-      - *save_repo
+      - *save_common_state
 
   staging_services_init:
     <<: *default_config
@@ -88,10 +110,9 @@ jobs:
       ENVIRONMENT_MODULE: "staging/services"
     steps:
       - checkout
-      - *restore_repo
       - *setup_credentials
       - *terraform_init
-      - *save_repo
+      - *save_services_state
 
   staging_services_plan:
     <<: *default_config
@@ -99,10 +120,10 @@ jobs:
       ENVIRONMENT_MODULE: "staging/services"
     steps:
       - checkout
-      - *restore_repo
+      - *restore_services_state
       - *setup_credentials
       - *terraform_plan
-      - *save_repo
+      - *save_services_state
 
   staging_services_apply:
     <<: *default_config
@@ -110,10 +131,10 @@ jobs:
       ENVIRONMENT_MODULE: "staging/services"
     steps:
       - checkout
-      - *restore_repo
+      - *restore_services_state
       - *setup_credentials
       - *terraform_apply
-      - *save_repo
+      - *save_services_state
 
 workflows:
   version: 2
