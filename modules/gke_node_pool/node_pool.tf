@@ -17,7 +17,7 @@ resource "google_container_node_pool" "node_pool" {
     ]
 
     labels = {
-      name = "${var.node_pool_name}"
+      name     = "${var.node_pool_name}"
       nodepool = "${var.node_pool_name}"
     }
   }

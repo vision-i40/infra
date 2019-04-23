@@ -15,6 +15,18 @@ setup_credentials: &setup_credentials
     name: Setup terraform credentials
     command: echo $SERVICE_ACCOUNT_CONTENT | base64 -d > credentials/account.json
 
+repo_cache_key: &repo_cache_key
+  v1-repo-{{ .Branch }}-{{ .Revision }}
+
+restore_repo: &restore_repo
+  restore_cache:
+    key: *repo_cache_key
+
+save_repo: &save_repo
+  save_cache:
+    key: *repo_cache_key
+    paths:
+      - *working_directory
 
 jobs:
   staging_common_init:
@@ -25,9 +37,9 @@ jobs:
       - run:
           name: Terraform Init
           command: |
-            echo $(pwd)
             cd environments/staging/common
             terraform init -input=false
+      - *save_repo
 
   staging_common_plan:
     <<: *default_config
@@ -39,6 +51,7 @@ jobs:
           command: |
             cd environments/staging/common
             terraform plan -input=false
+      - *save_repo
 
 workflows:
   version: 2
