@@ -31,43 +31,90 @@ save_repo: &save_repo
     paths:
       - *working_directory
 
+terraform_init: &terraform_init
+  run:
+    name: Terraform init
+    command: |
+      cd environments/$ENVIRONMENT_MODULE
+      terraform init -input=false
+
+terraform_plan: &terraform_plan
+  run:
+    name: Terraform plan
+    command: |
+      cd environments/$ENVIRONMENT_MODULE
+      terraform plan -input=false
+
+terraform_apply: &terraform_apply
+  run:
+    name: Terraform apply
+    command: |
+      cd environments/$ENVIRONMENT_MODULE
+      terraform apply -input=false
+
 jobs:
   staging_common_init:
     <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/common"
     steps:
       - checkout
       - *setup_credentials
-      - run:
-          name: Terraform Init
-          command: |
-            cd environments/staging/common
-            terraform init -input=false
+      - *terraform_init
+      - *save_repo
+
+  staging_services_init:
+    <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/services"
+    steps:
+      - checkout
+      - *setup_credentials
+      - *terraform_init
       - *save_repo
 
   staging_common_plan:
     <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/common"
     steps:
       - checkout
       - *restore_repo
       - *setup_credentials
-      - run:
-          name: Terraform Plan
-          command: |
-            cd environments/staging/common
-            terraform plan -input=false
+      - *terraform_plan
+      - *save_repo
+
+  staging_services_plan:
+    <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/services"
+    steps:
+      - checkout
+      - *restore_repo
+      - *setup_credentials
+      - *terraform_plan
       - *save_repo
 
   staging_common_apply:
     <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/common"
     steps:
       - checkout
       - *restore_repo
       - *setup_credentials
-      - run:
-          name: Terraform Apply
-          command: |
-            cd environments/staging/common
-            terraform apply -input=false
+      - *terraform_apply
+      - *save_repo
+
+  staging_services_apply:
+    <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/services"
+    steps:
+      - checkout
+      - *restore_repo
+      - *setup_credentials
+      - *terraform_apply
       - *save_repo
 
 workflows:
@@ -75,17 +122,28 @@ workflows:
   init_plan_apply:
     jobs:
       - staging_common_init
+      - staging_services_init
       - staging_common_plan:
           requires:
             - staging_common_init
+      - staging_services_plan:
+          requires:
+            - staging_services_init
       - approve:
           type: approval
           requires:
             - staging_common_plan
+            - staging_services_plan
           filters:
             branches:
               only: master
       - staging_common_apply:
+          requires:
+            - approve
+          filters:
+            branches:
+              only: master
+      - staging_services_apply:
           requires:
             - approve
           filters:
