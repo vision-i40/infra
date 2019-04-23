@@ -13,11 +13,6 @@ default_config: &default_config
     - image: *base_image
   working_directory: *working_directory
 
-setup_credentials: &setup_credentials
-  run:
-    name: Setup terraform credentials
-    command: echo $SERVICE_ACCOUNT_CONTENT | base64 -d > credentials/account.json
-
 repo_cache_key: &repo_cache_key
   v1-repo-{{ .Branch }}-{{ .Revision }}
 
@@ -30,6 +25,11 @@ save_repo: &save_repo
     key: *repo_cache_key
     paths:
       - *working_directory
+
+setup_credentials: &setup_credentials
+  run:
+    name: Setup terraform credentials
+    command: echo $SERVICE_ACCOUNT_CONTENT | base64 -d > credentials/account.json
 
 terraform_init: &terraform_init
   run:
@@ -69,6 +69,7 @@ jobs:
       ENVIRONMENT_MODULE: "staging/services"
     steps:
       - checkout
+      - *restore_repo
       - *setup_credentials
       - *terraform_init
       - *save_repo
@@ -122,8 +123,10 @@ workflows:
   init_plan_apply:
     jobs:
       - staging_common_init
-      - staging_services_init
       - staging_common_plan:
+          requires:
+            - staging_common_init
+      - staging_services_init:
           requires:
             - staging_common_init
       - staging_services_plan:
@@ -146,6 +149,7 @@ workflows:
       - staging_services_apply:
           requires:
             - approve
+            - staging_common_apply
           filters:
             branches:
               only: master
