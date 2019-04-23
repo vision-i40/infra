@@ -13,16 +13,13 @@ default_config: &default_config
     - image: *base_image
   working_directory: *working_directory
 
-repo_cache_key: &repo_cache_key
-  v1-repo-{{ .Branch }}-{{ .Revision }}-{{ .Environment.ENVIRONMENT_MODULE }}
-
 restore_repo: &restore_repo
   restore_cache:
-    key: *repo_cache_key
+    key: v1-repo-{{ .Branch }}-{{ .Revision }}-{{ .Environment.ENVIRONMENT_MODULE }}
 
 save_repo: &save_repo
   save_cache:
-    key: *repo_cache_key
+    key: v1-repo-{{ .Branch }}-{{ .Revision }}-{{ .Environment.ENVIRONMENT_MODULE }}
     paths:
       - environments/{{ .Environment.ENVIRONMENT_MODULE }}/.terraform
 
