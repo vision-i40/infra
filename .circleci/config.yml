@@ -2,13 +2,16 @@ version: 2
 
 references:
 
+working_directory: &working_directory
+  ~/infra
+
 base_image: &base_image
   hashicorp/terraform:light
 
 default_config: &default_config
   docker:
     - image: *base_image
-  working_directory: ~/infra
+  working_directory: *working_directory
 
 setup_credentials: &setup_credentials
   run:
