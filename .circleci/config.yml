@@ -14,7 +14,7 @@ default_config: &default_config
   working_directory: *working_directory
 
 repo_cache_key: &repo_cache_key
-  v1-repo-{{ .Branch }}-{{ .Revision }}
+  v1-repo-{{ .Branch }}-{{ .Revision }}-{{ .Environment.ENVIRONMENT_MODULE }}
 
 restore_repo: &restore_repo
   restore_cache:
@@ -24,7 +24,7 @@ save_repo: &save_repo
   save_cache:
     key: *repo_cache_key
     paths:
-      - *working_directory
+      - environments/{{ .Environment.ENVIRONMENT_MODULE }}/.terraform
 
 setup_credentials: &setup_credentials
   run:
@@ -63,32 +63,10 @@ jobs:
       - *terraform_init
       - *save_repo
 
-  staging_services_init:
-    <<: *default_config
-    environment:
-      ENVIRONMENT_MODULE: "staging/services"
-    steps:
-      - checkout
-      - *restore_repo
-      - *setup_credentials
-      - *terraform_init
-      - *save_repo
-
   staging_common_plan:
     <<: *default_config
     environment:
       ENVIRONMENT_MODULE: "staging/common"
-    steps:
-      - checkout
-      - *restore_repo
-      - *setup_credentials
-      - *terraform_plan
-      - *save_repo
-
-  staging_services_plan:
-    <<: *default_config
-    environment:
-      ENVIRONMENT_MODULE: "staging/services"
     steps:
       - checkout
       - *restore_repo
@@ -105,6 +83,28 @@ jobs:
       - *restore_repo
       - *setup_credentials
       - *terraform_apply
+      - *save_repo
+
+  staging_services_init:
+    <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/services"
+    steps:
+      - checkout
+      - *restore_repo
+      - *setup_credentials
+      - *terraform_init
+      - *save_repo
+
+  staging_services_plan:
+    <<: *default_config
+    environment:
+      ENVIRONMENT_MODULE: "staging/services"
+    steps:
+      - checkout
+      - *restore_repo
+      - *setup_credentials
+      - *terraform_plan
       - *save_repo
 
   staging_services_apply:
@@ -126,10 +126,7 @@ workflows:
       - staging_common_plan:
           requires:
             - staging_common_init
-      - staging_services_init:
-          requires:
-            - staging_common_plan
-            - staging_common_init
+      - staging_services_init
       - staging_services_plan:
           requires:
             - staging_services_init
