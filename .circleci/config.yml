@@ -5,28 +5,34 @@ references:
 base_image: &base_image
   hashicorp/terraform:light
 
-default_config: &default_config
+default_common_config: &default_common_config
   docker:
     - image: *base_image
+  working_directory: ~/infra/environments/staging/common
+
+setup_credentials: &setup_credentials
+  run:
+    name: Setup terraform credentials
+    command: echo $SERVICE_ACCOUNT_CONTENT | base64 -d > ~/infra/credentials/account.json
+
 
 jobs:
-  staging_init:
-    <<: *default_config
-    working_directory: ~/environments/staging/common
+  staging_common_init:
+    <<: *default_common_config
     steps:
       - checkout
-
+      - *setup_credentials
       - run:
           name: Terraform Init
           command: |
+            cd environments/staging/common
             terraform init -input=false
 
-  staging_plan:
-    <<: *default_config
-    working_directory: ~/environments/staging/common
+  staging_common_plan:
+    <<: *default_common_config
     steps:
       - checkout
-
+      - *setup_credentials
       - run:
           name: Terraform Plan
           command: |
@@ -36,7 +42,7 @@ workflows:
   version: 2
   init_plan_:
     jobs:
-      - staging_init
-      - staging_plan:
+      - staging_common_init
+      - staging_common_plan:
           requires:
-            - staging_init
+            - staging_common_init
