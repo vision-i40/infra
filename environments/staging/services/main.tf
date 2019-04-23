@@ -1,6 +1,5 @@
-variable "gcloud_project_id" {
-  default = "vision-i40"
-}
+variable "gcloud_project_id" { default = "vision-i40" }
+variable "credentials_file" { default = "../../../credentials/account.json" }
 
 variable "region" {}
 variable "environment" {}
@@ -20,6 +19,8 @@ variable "mongodb_is_ssl_enabled" {}
 variable "secret_key" {}
 variable "encryption_salt" {}
 
+variable "customer_registry_service_subdomain" {}
+
 terraform {
   backend "gcs" {
     bucket  = "vision-staging-terraform-states"
@@ -36,13 +37,17 @@ provider "google" {
 
 module "customer_registry_service" {
   source                    = "./../../../modules/customer_registry_service"
+  credentials_file          = "${var.credentials_file}"
+  gcloud_project_id         = "${var.gcloud_project_id}"
+  gcloud_region             = "${var.region}"
+
   default_container         = "${var.default_container}"
   environment               = "${var.environment}"
 
-  k8s_master_host           = "${data.terraform_remote_state.k8s_cluster.endpoint}"
-  k8s_ca_certificate        = "${data.terraform_remote_state.k8s_cluster.cluster_ca_certificate}"
-  k8s_client_certificate    = "${data.terraform_remote_state.k8s_cluster.client_certificate}"
-  k8s_client_key            = "${data.terraform_remote_state.k8s_cluster.client_key}"
+  k8s_master_host           = "${data.terraform_remote_state.common_state.endpoint}"
+  k8s_ca_certificate        = "${data.terraform_remote_state.common_state.cluster_ca_certificate}"
+  k8s_client_certificate    = "${data.terraform_remote_state.common_state.client_certificate}"
+  k8s_client_key            = "${data.terraform_remote_state.common_state.client_key}"
   k8s_username              = "${var.k8s_username}"
   k8s_password              = "${var.k8s_password}"
   k8s_namespace             = "${var.k8s_namespace}"
@@ -56,4 +61,8 @@ module "customer_registry_service" {
   mongodb_is_ssl_enabled    = "${var.mongodb_is_ssl_enabled}"
   secret_key                = "${var.secret_key}"
   encryption_salt           = "${var.encryption_salt}"
+
+  subdomain                 = "${var.customer_registry_service_subdomain}"
+  dns_name                  = "${data.terraform_remote_state.common_state.zone_dns}"
+  zone_name                 = "${data.terraform_remote_state.common_state.zone_name}"
 }

@@ -1,4 +1,4 @@
-data "terraform_remote_state" "k8s_cluster" {
+data "terraform_remote_state" "common_state" {
     backend = "gcs"
     config {
         bucket  = "vision-staging-terraform-states"

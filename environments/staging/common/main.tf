@@ -1,12 +1,8 @@
-variable "gcloud_project_id" {
-  default = "vision-i40"
-}
+variable "gcloud_project_id" { default = "vision-i40" }
 
 variable "environment" {}
 
-variable "credentials_file" {
-  default = "../../../credentials/account.json"
-}
+variable "credentials_file" { default = "../../../credentials/account.json" }
 
 variable "region" {}
 variable "cluster_name" {}
@@ -20,6 +16,9 @@ variable "np_services_preemptible" {}
 variable "np_services_initial_node_count" {}
 variable "np_services_min_node_count" {}
 variable "np_services_max_node_count" {}
+
+variable "zone_name" {}
+variable "dns_name" {}
 
 terraform {
   backend "gcs" {
@@ -67,4 +66,14 @@ module "gke_services_node_pools" {
   machine_type       = "${var.np_services_machine_type}"
   min_node_count     = "${var.np_services_min_node_count}"
   max_node_count     = "${var.np_services_max_node_count}"
+}
+
+module "vision40_com_br_zone" {
+  source            = "./../../../modules/gcp_zone"
+  credentials_file  = "${var.credentials_file}"
+  gcloud_project_id = "${var.gcloud_project_id}"
+  gcloud_region     = "${var.region}"
+
+  zone_name         = "${var.zone_name}"
+  dns_name          = "${var.dns_name}"
 }

@@ -1,3 +1,7 @@
+variable "credentials_file" {}
+variable "gcloud_project_id" {}
+variable "gcloud_region" {}
+
 variable "default_container" { default = "" }
 
 variable "environment" {}
@@ -18,3 +22,7 @@ variable "mongo_connection_string" {}
 variable "mongodb_is_ssl_enabled" {}
 variable "secret_key" {}
 variable "encryption_salt" {}
+
+variable "subdomain" {}
+variable "dns_name" {}
+variable "zone_name" {}

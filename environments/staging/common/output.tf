@@ -13,3 +13,11 @@ output "cluster_ca_certificate" {
 output "endpoint" {
   value = "${module.gke_cluster.endpoint}"
 }
+
+output "zone_name" {
+  value = "${module.vision40_com_br_zone.zone_name}"
+}
+
+output "zone_dns" {
+  value = "${module.vision40_com_br_zone.zone_dns}"
+}
