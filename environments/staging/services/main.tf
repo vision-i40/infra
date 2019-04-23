@@ -16,6 +16,7 @@ variable "default_container" {}
 
 variable "mongodb_database_name" {}
 variable "mongo_connection_string" {}
+variable "mongodb_is_ssl_enabled" {}
 variable "secret_key" {}
 variable "encryption_salt" {}
 
@@ -52,6 +53,7 @@ module "customer_registry_service" {
 
   mongodb_database_name     = "${var.mongodb_database_name}"
   mongo_connection_string   = "${var.mongo_connection_string}"
+  mongodb_is_ssl_enabled    = "${var.mongodb_is_ssl_enabled}"
   secret_key                = "${var.secret_key}"
   encryption_salt           = "${var.encryption_salt}"
 }

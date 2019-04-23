@@ -15,5 +15,6 @@ variable "max_replicas" {}
 
 variable "mongodb_database_name" {}
 variable "mongo_connection_string" {}
+variable "mongodb_is_ssl_enabled" {}
 variable "secret_key" {}
 variable "encryption_salt" {}
