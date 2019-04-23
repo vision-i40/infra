@@ -57,11 +57,37 @@ jobs:
             terraform plan -input=false
       - *save_repo
 
+  staging_common_apply:
+    <<: *default_config
+    steps:
+      - checkout
+      - *restore_repo
+      - *setup_credentials
+      - run:
+          name: Terraform Apply
+          command: |
+            cd environments/staging/common
+            terraform apply -input=false
+      - *save_repo
+
 workflows:
   version: 2
-  init_plan_:
+  init_plan_apply:
     jobs:
       - staging_common_init
       - staging_common_plan:
           requires:
             - staging_common_init
+      - approve:
+          type: approval
+          requires:
+            - staging_common_plan
+          filters:
+            branches:
+              only: master
+      - staging_common_apply:
+          requires:
+            - approve
+          filters:
+            branches:
+              only: master
