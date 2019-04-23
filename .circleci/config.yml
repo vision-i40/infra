@@ -25,6 +25,7 @@ jobs:
       - run:
           name: Terraform Init
           command: |
+            echo $(pwd)
             cd environments/staging/common
             terraform init -input=false
 
