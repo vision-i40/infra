@@ -13,6 +13,11 @@ output "cluster_ca_certificate" {
   sensitive = true
 }
 
+output "cluster_name" {
+  value = "${google_container_cluster.gke.name}"
+  sensitive = true
+}
+
 output "endpoint" {
   value = "${google_container_cluster.gke.endpoint}"
 }

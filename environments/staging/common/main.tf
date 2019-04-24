@@ -34,15 +34,6 @@ provider "google" {
   region      = "${var.region}"
 }
 
-provider "kubernetes" {
-  host                   = "${module.gke_cluster.endpoint}"
-  cluster_ca_certificate = "${module.gke_cluster.cluster_ca_certificate}"
-  client_certificate     = "${module.gke_cluster.client_certificate}"
-  client_key             = "${module.gke_cluster.client_key}"
-  username               = "${var.k8s_username}"
-  password               = "${var.k8s_password}"
-}
-
 module "gke_cluster" {
   source            = "./../../../modules/gke"
   gke_cluster_name  = "${var.cluster_name}"
@@ -59,7 +50,7 @@ module "gke_services_node_pools" {
   gcloud_region      = "${var.region}"
   gcloud_project_id  = "${var.gcloud_project_id}"
   credentials_file   = "${var.credentials_file}"
-  cluster_name       = "${var.cluster_name}"
+  cluster_name       = "${module.gke_cluster.cluster_name}"
   preemptible        = "${var.np_services_preemptible}"
   initial_node_count = "${var.np_services_initial_node_count}"
   disk_size_gb       = "${var.np_services_disk_size_gb}"
