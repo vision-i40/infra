@@ -11,7 +11,8 @@ variable "replicas" {}
 variable "min_replicas" {}
 variable "max_replicas" {}
 
-variable "default_container" {}
+variable "default_crs_container" {}
+variable "default_web_app_container" {}
 
 variable "mongodb_database_name" {}
 variable "mongo_connection_string" {}
@@ -20,6 +21,7 @@ variable "secret_key" {}
 variable "encryption_salt" {}
 
 variable "customer_registry_service_subdomain" {}
+variable "web_app_subdomain" {}
 
 terraform {
   backend "gcs" {
@@ -41,7 +43,7 @@ module "customer_registry_service" {
   gcloud_project_id         = "${var.gcloud_project_id}"
   gcloud_region             = "${var.region}"
 
-  default_container         = "${var.default_container}"
+  default_container         = "${var.default_crs_container}"
   environment               = "${var.environment}"
 
   k8s_master_host           = "${data.terraform_remote_state.common_state.endpoint}"
@@ -63,6 +65,32 @@ module "customer_registry_service" {
   encryption_salt           = "${var.encryption_salt}"
 
   subdomain                 = "${var.customer_registry_service_subdomain}"
+  dns_name                  = "${data.terraform_remote_state.common_state.zone_dns}"
+  zone_name                 = "${data.terraform_remote_state.common_state.zone_name}"
+}
+
+module "web_app" {
+  source                    = "./../../../modules/web_app"
+  credentials_file          = "${var.credentials_file}"
+  gcloud_project_id         = "${var.gcloud_project_id}"
+  gcloud_region             = "${var.region}"
+
+  default_container         = "${var.default_web_app_container}"
+  environment               = "${var.environment}"
+
+  k8s_master_host           = "${data.terraform_remote_state.common_state.endpoint}"
+  k8s_ca_certificate        = "${data.terraform_remote_state.common_state.cluster_ca_certificate}"
+  k8s_client_certificate    = "${data.terraform_remote_state.common_state.client_certificate}"
+  k8s_client_key            = "${data.terraform_remote_state.common_state.client_key}"
+  k8s_username              = "${var.k8s_username}"
+  k8s_password              = "${var.k8s_password}"
+  k8s_namespace             = "${var.k8s_namespace}"
+
+  replicas                  = "${var.replicas}"
+  min_replicas              = "${var.min_replicas}"
+  max_replicas              = "${var.max_replicas}"
+
+  subdomain                 = "${var.web_app_subdomain}"
   dns_name                  = "${data.terraform_remote_state.common_state.zone_dns}"
   zone_name                 = "${data.terraform_remote_state.common_state.zone_name}"
 }
